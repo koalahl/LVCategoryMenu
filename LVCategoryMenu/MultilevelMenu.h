@@ -1,3 +1,10 @@
+//
+//  MultilevelMenu.h
+//  MultilevelMenu
+//
+//  Created by gitBurning on 15/3/13.
+//  Copyright (c) 2015年 BR. All rights reserved.
+//
 
 #import <UIKit/UIKit.h>
 
@@ -67,6 +74,7 @@ typedef void(^SelectedTableViewIndexBlock)(NSInteger index,id obj);
  */
 @property(strong,nonatomic) UIColor * leftSeparatorColor;
 
+@property(assign,nonatomic) BOOL    fixedBanner;
 -(instancetype)initWithFrame:(CGRect)frame WithData:(NSArray*)data withSelectIndex:(void(^)(NSString * categoryId, NSIndexPath * rightIndexPath,NSString * attr_id))selectIndex;
 
 @end

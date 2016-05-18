@@ -1,4 +1,10 @@
-
+//
+//  MultilevelMenu.m
+//  MultilevelMenu
+//
+//  Created by gitBurning on 15/3/13.
+//  Copyright (c) 2015年 BR. All rights reserved.
+//
 
 #import "MultilevelMenu.h"
 #import "MultilevelTableViewCell.h"
@@ -26,6 +32,9 @@
 @property (nonatomic,assign)NSInteger selectedCategoryIndex;
 @property (nonatomic,assign)BOOL isReturnLastOffset;
 @property (nonatomic,strong)NSArray *headerIconArray;
+
+@property (nonatomic,strong)UIImageView * bannerImg;
+
 @end
 @implementation MultilevelMenu
 
@@ -153,6 +162,20 @@
 
 }
 
+- (void)setFixedBanner:(BOOL)fixedBanner{
+    _fixedBanner = fixedBanner;
+    if (fixedBanner) {
+        CGRect frame = self.rightCollection.frame;
+        frame.origin.y = 80;
+        self.rightCollection.frame = frame;
+        
+        _bannerImg = [[UIImageView alloc]initWithFrame:CGRectMake(kLeftWidth+3, 0, kScreenWidth - kLeftWidth - 6, 80 )];
+        [self addSubview:_bannerImg];
+        
+        [self.rightCollection reloadData];
+    }
+    
+}
 #pragma mark---左边的tablew 代理
 #pragma mark--deleagte
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
@@ -304,45 +327,53 @@
         view.backgroundColor = [UIColor lightGrayColor];
         return view;
     }else{
-        if (indexPath.section == 0) {
-            reuseIdentifier = kMultilevelCollectionHeaderWithBanner;
-            CollectionHeaderWithBanner *header =  (CollectionHeaderWithBanner *)[collectionView dequeueReusableSupplementaryViewOfKind :kind   withReuseIdentifier:reuseIdentifier   forIndexPath:indexPath];
-            
-            
-            if (self.collectionDataSource.count>0) {
-                NSDictionary *itemDic  = self.collectionDataSource[indexPath.section];
-                header.title.text      = itemDic[@"name"];
-                NSString *imgName      = self.headerIconArray[0];
-                header.headerImg.image = [UIImage imageNamed:imgName];
-                if (_topImagesArray.count) {
-                    NSString * topImageUrl = _topImagesArray[_selectedCategoryIndex];
-                    NSLog(@"topImageUrl:%@",topImageUrl);
-                    [header.bannerImg sd_setImageWithURL:[NSURL URLWithString:topImageUrl] placeholderImage:nil options:SDWebImageRefreshCached];
+        if (!_fixedBanner) {
+            if (indexPath.section == 0) {
+                reuseIdentifier = kMultilevelCollectionHeaderWithBanner;
+                CollectionHeaderWithBanner *header =  (CollectionHeaderWithBanner *)[collectionView dequeueReusableSupplementaryViewOfKind :kind   withReuseIdentifier:reuseIdentifier   forIndexPath:indexPath];
+                
+                
+                if (self.collectionDataSource.count>0) {
+                    NSDictionary *itemDic  = self.collectionDataSource[indexPath.section];
+                    header.title.text      = itemDic[@"name"];
+                    NSString *imgName      = self.headerIconArray[0];
+                    header.headerImg.image = [UIImage imageNamed:imgName];
+                    if (_topImagesArray.count) {
+                        NSString * topImageUrl = _topImagesArray[_selectedCategoryIndex];
+                        NSLog(@"topImageUrl:%@",topImageUrl);
+                        [header.bannerImg sd_setImageWithURL:[NSURL URLWithString:topImageUrl] placeholderImage:nil options:SDWebImageRefreshCached];
+                    }
+                    
                 }
-               
+                else{
+                    header.title.text=@"暂无";
+                }
+                
+                return header;
             }
-            else{
-                header.title.text=@"暂无";
-            }
-            
-            return header;
         }else{
-            reuseIdentifier = kMultilevelCollectionHeader;
-            CollectionHeader *header =  (CollectionHeader *)[collectionView dequeueReusableSupplementaryViewOfKind :kind   withReuseIdentifier:reuseIdentifier   forIndexPath:indexPath];
-            
-            int t = indexPath.section%5;
-            
-            if (self.collectionDataSource.count>0) {
-                NSDictionary *itemDic  = self.collectionDataSource[indexPath.section];
-                header.title.text      = itemDic[@"name"];
-                NSString *imgName      = self.headerIconArray[t];
-                header.headerImg.image = [UIImage imageNamed:imgName];
-            }
-            else{
-                header.title.text=@"暂无";
-            }
-            return header;
+            NSString * topImageUrl = _topImagesArray[_selectedCategoryIndex];
+
+            [_bannerImg sd_setImageWithURL:[NSURL URLWithString:topImageUrl] placeholderImage:nil options:SDWebImageRefreshCached];
         }
+        
+        
+        reuseIdentifier = kMultilevelCollectionHeader;
+        CollectionHeader *header =  (CollectionHeader *)[collectionView dequeueReusableSupplementaryViewOfKind :kind   withReuseIdentifier:reuseIdentifier   forIndexPath:indexPath];
+        
+        int t = indexPath.section%5;
+        
+        if (self.collectionDataSource.count>0) {
+            NSDictionary *itemDic  = self.collectionDataSource[indexPath.section];
+            header.title.text      = itemDic[@"name"];
+            NSString *imgName      = self.headerIconArray[t];
+            header.headerImg.image = [UIImage imageNamed:imgName];
+        }
+        else{
+            header.title.text=@"暂无";
+        }
+        return header;
+        
     }
 
     
@@ -378,10 +409,13 @@
 -(CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section{
     
     CGSize size = {kScreenWidth-kLeftWidth,44};
-    if (section == 0) {
-        size.height = 44+80;
-        return size;
+    if (!_fixedBanner) {
+        if (section == 0) {
+            size.height = 44+80;
+            return size;
+        }
     }
+    
     return size;
 }
 
